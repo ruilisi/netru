@@ -1,0 +1,36 @@
+[package]
+name = "netr"
+version = "0.1.0"
+edition = "2021"
+description = "Cross-platform network utilities for Rust"
+license = "MIT"
+keywords = ["network", "proxy", "system-proxy", "networking"]
+categories = ["network-programming", "os"]
+repository = "https://github.com/ruilisi/netr"
+readme = "README.md"
+
+[features]
+default = ["utils"]
+utils = ["dep:iptools"]
+
+[dependencies]
+log = "0.4"
+thiserror = "1"
+iptools = { version = "0.3.0", optional = true }
+
+[target.'cfg(target_os = "linux")'.dependencies]
+xdg = "^2.5"
+
+[target.'cfg(target_os = "macos")'.dependencies]
+interfaces = "0.0.9"
+
+[target.'cfg(target_os = "windows")'.dependencies]
+winreg = { version = "0.52", features = ["transactions"] }
+windows = { version = "0.58", features = [
+    "Win32_Networking_WinInet",
+    "Win32_NetworkManagement_Rras",
+    "Win32_Foundation",
+] }
+
+[dev-dependencies]
+serial_test = "3.1.1"
