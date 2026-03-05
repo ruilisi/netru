@@ -1,4 +1,4 @@
-# netr
+# netru
 
 A Rust crate for cross-platform network libraries and utilities. The goal is to build a comprehensive collection of network tools, libraries, and helpers — all under one dependency.
 
@@ -6,13 +6,13 @@ A Rust crate for cross-platform network libraries and utilities. The goal is to 
 
 ```toml
 [dependencies]
-netr = "0.1"
+netru = "0.1"
 ```
 
 Disable the `utils` feature to drop the `iptools` dependency:
 
 ```toml
-netr = { version = "0.1", default-features = false }
+netru = { version = "0.1", default-features = false }
 ```
 
 ## Usage
@@ -20,34 +20,39 @@ netr = { version = "0.1", default-features = false }
 All types are available directly at the crate root:
 
 ```rust
-use netr::{Sysproxy, Autoproxy};
+use netru::{Sysproxy, Autoproxy};
 ```
 
 ### Manual Proxy
 
 ```rust
-use netr::Sysproxy;
+use netru::Sysproxy;
 
-// Read current system proxy
+// Enable from a "host:port" string
+Sysproxy::enable("127.0.0.1:7890")?;
+
+// Check if proxy is currently enabled
+let on = Sysproxy::check()?;
+
+// Disable (preserves host/port settings)
+Sysproxy::disable()?;
+
+// Full control
 let proxy = Sysproxy::get_system_proxy()?;
 println!("enabled={} host={} port={}", proxy.enable, proxy.host, proxy.port);
 
-// Set a proxy
 Sysproxy {
     enable: true,
     host: "127.0.0.1".into(),
     port: 7890,
     bypass: "localhost,127.0.0.1/8".into(),
 }.set_system_proxy()?;
-
-// Disable
-Sysproxy { enable: false, ..Default::default() }.set_system_proxy()?;
 ```
 
 ### Auto-Proxy (PAC)
 
 ```rust
-use netr::Autoproxy;
+use netru::Autoproxy;
 
 // Set a PAC URL
 Autoproxy {
@@ -65,7 +70,7 @@ println!("url={} enabled={}", auto.url, auto.enable);
 Useful for building bypass lists. Requires the `utils` feature (on by default).
 
 ```rust
-use netr::utils::ipv4_cidr_to_wildcard;
+use netru::utils::ipv4_cidr_to_wildcard;
 
 let w = ipv4_cidr_to_wildcard("192.168.1.0/24")?; // ["192.168.1.*"]
 let w = ipv4_cidr_to_wildcard("10.0.0.0/8")?;     // ["10.*"]
@@ -75,15 +80,18 @@ let w = ipv4_cidr_to_wildcard("10.0.0.0/8")?;     // ["10.*"]
 
 ```rust
 // Types
-netr::Sysproxy       // Manual proxy config
-netr::Autoproxy      // PAC / auto-proxy config
-netr::Error          // Error type
-netr::Result<T>      // Result alias
+netru::Sysproxy       // Manual proxy config
+netru::Autoproxy      // PAC / auto-proxy config
+netru::Error          // Error type
+netru::Result<T>      // Result alias
 
 // Sysproxy
 Sysproxy::get_system_proxy() -> Result<Sysproxy>
 Sysproxy::set_system_proxy(&self) -> Result<()>
 Sysproxy::is_support() -> bool
+Sysproxy::check() -> Result<bool>            // is proxy currently enabled?
+Sysproxy::enable(addr: &str) -> Result<()>   // enable from "host:port"
+Sysproxy::disable() -> Result<()>            // disable, preserve settings
 
 // Autoproxy
 Autoproxy::get_auto_proxy() -> Result<Autoproxy>
@@ -91,7 +99,7 @@ Autoproxy::set_auto_proxy(&self) -> Result<()>
 Autoproxy::is_support() -> bool
 
 // utils (feature = "utils")
-netr::utils::ipv4_cidr_to_wildcard(cidr: &str) -> Result<Vec<String>>
+netru::utils::ipv4_cidr_to_wildcard(cidr: &str) -> Result<Vec<String>>
 ```
 
 ## Platform Support
@@ -172,7 +180,7 @@ cargo publish
 ## Project Structure
 
 ```
-netr/
+netru/
 ├── Cargo.toml
 ├── README.md
 ├── src/
@@ -187,7 +195,7 @@ netr/
     └── test.rs
 ```
 
-Internal modules live under `src/<module>/` but are never exposed as nested paths — everything is re-exported flat at `netr::*`. When a new module grows too many types, it gets its own subdirectory following the same pattern.
+Internal modules live under `src/<module>/` but are never exposed as nested paths — everything is re-exported flat at `netru::*`. When a new module grows too many types, it gets its own subdirectory following the same pattern.
 
 ## Roadmap
 

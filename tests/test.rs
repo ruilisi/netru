@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod tests {
     use serial_test::serial;
-    use netr::{Autoproxy, Sysproxy};
+    use netru::{Autoproxy, Sysproxy};
 
     #[test]
     fn test_sys_support() {

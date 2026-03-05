@@ -57,6 +57,38 @@ impl Sysproxy {
             target_os = "windows",
         ))
     }
+
+    /// Check whether the system proxy is currently enabled.
+    pub fn check() -> Result<bool> {
+        Ok(Sysproxy::get_system_proxy()?.enable)
+    }
+
+    /// Enable the system proxy from a `"host:port"` string.
+    pub fn enable(addr: &str) -> Result<()> {
+        let (host, port) = addr
+            .rsplit_once(':')
+            .ok_or_else(|| Error::ParseStr(addr.into()))?;
+        let port = port.parse::<u16>().map_err(|_| Error::ParseStr(addr.into()))?;
+        Sysproxy {
+            enable: true,
+            host: host.into(),
+            port,
+            bypass: String::new(),
+        }
+        .set_system_proxy()
+    }
+
+    /// Disable the system proxy.
+    pub fn disable() -> Result<()> {
+        Sysproxy::get_system_proxy()
+            .unwrap_or_default()
+            .set_system_proxy_enable(false)
+    }
+
+    /// Set only the enabled state, preserving existing host/port/bypass.
+    pub fn set_system_proxy_enable(&self, enable: bool) -> Result<()> {
+        Sysproxy { enable, ..self.clone() }.set_system_proxy()
+    }
 }
 
 impl Autoproxy {
